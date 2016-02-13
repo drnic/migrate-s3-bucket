@@ -2,11 +2,14 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/cloudfoundry-community/go-cfenv"
 	"github.com/codegangsta/cli"
 	"github.com/go-martini/martini"
+	"github.com/mitchellh/goamz/aws"
+	"github.com/mitchellh/goamz/s3"
 )
 
 func buckets() (buckets []cfenv.Service, err error) {
@@ -61,13 +64,32 @@ func main() {
 					fmt.Println(err)
 					os.Exit(1)
 				}
-				toBucket, err := bucketWithName(c.Args()[1])
+				// toBucket, err := bucketWithName(c.Args()[1])
+				// if err != nil {
+				// 	fmt.Println(err)
+				// 	os.Exit(1)
+				// }
+				fromBucketAWS, _ := aws.GetAuth(fromBucket.Credentials["access_key_id"].(string), fromBucket.Credentials["secret_access_key"].(string))
+				// toBucketAWS, _ := aws.GetAuth(toBucket.Credentials["access_key_id"].(string), toBucket.Credentials["secret_access_key"].(string))
+				fmt.Println("From bucket:", fromBucketAWS)
+				client := s3.New(fromBucketAWS, aws.USEast)
+				bucket := client.Bucket(fromBucket.Credentials["bucket"].(string))
+				items, err := bucket.GetBucketContents()
 				if err != nil {
-					fmt.Println(err)
-					os.Exit(1)
+					log.Fatal(err)
 				}
-				fmt.Println("From bucket:", fromBucket.Credentials)
-				fmt.Println("To bucket:", toBucket.Credentials)
+
+				log.Println(items)
+
+				// fmt.Println("To bucket:", toBucketAWS)
+				// client = s3.New(toBucketAWS, aws.USEast)
+				// bucket, err = client.Bucket()
+				//
+				// if err != nil {
+				// 	log.Fatal(err)
+				// }
+				//
+				// log.Print(fmt.Sprintf("%T %+v", resp.Buckets[0], resp.Buckets[0]))
 			},
 		},
 		{
