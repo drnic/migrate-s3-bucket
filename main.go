@@ -79,7 +79,9 @@ func main() {
 					log.Fatal(err)
 				}
 
-				log.Println(items)
+				for key, val := range *items {
+					fmt.Printf("'%s': %#v\n", key, val)
+				}
 
 				// fmt.Println("To bucket:", toBucketAWS)
 				// client = s3.New(toBucketAWS, aws.USEast)
